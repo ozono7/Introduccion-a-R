@@ -84,7 +84,10 @@ print(kpa_a_atm(101.325))  # 101.325 kPa = 1 atm
 humedad_relativa <- function(presion_vapor, presion_saturacion) {
   return((presion_vapor / presion_saturacion) * 100)
 }
-print(humedad_relativa(2.3, 3.1))  # Ejemplo con valores en kPa: 74.2 %
+# Presión de saturación del agua a 25 °C: 3.17 kPa (tablas de vapor,
+# Cengel, Thermodynamics, tabla A-4: 3.1698 kPa; la ecuación de Antoine
+# da 3.16 kPa). Con P_v = 2.3 kPa, la humedad relativa es 72.6 %.
+print(humedad_relativa(2.3, 3.17))  # Ejemplo con valores en kPa: 72.6 %
 
 # --------------------------------------------------------------------------
 # 5. Flujo laminar y turbulento, Número de Reynolds
