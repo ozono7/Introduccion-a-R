@@ -7,15 +7,19 @@
 # México
 #
 # Material académico para estudiantes
+# Serie "Introducción a R" — Clase 1
 #
 # Descripción: Introducción a R: conceptos básicos, comentarios, asignación de variables y operaciones fundamentales.
 # ==========================================================================
 
 
+# --------------------------------------------------------------------------
+# 1. Variables y operaciones básicas
+# --------------------------------------------------------------------------
 x <- 10   # Asignamos el valor 10 a la variable x
 y <- 5    # Asignamos el valor 5 a la variable y
 
-# Operaciones básicas
+# Operaciones básicas: suma = 15, diferencia = 5, producto = 50, división = 2
 suma <- x + y   # Suma
 diferencia <- x - y  # Resta
 producto <- x * y  # Multiplicación
@@ -27,7 +31,9 @@ print(diferencia)
 print(producto)
 print(division)
 
-# Vectores en R
+# --------------------------------------------------------------------------
+# 2. Vectores en R
+# --------------------------------------------------------------------------
 vector_numeros <- c(1, 2, 3, 4, 5)  # Crear un vector
 print(vector_numeros)
 
@@ -39,43 +45,50 @@ print(vector_numeros[3])  # Tercer elemento
 del_1_al_10 <- 1:10  # Secuencia del 1 al 10
 print(del_1_al_10)
 
-# Funciones en R
+# --------------------------------------------------------------------------
+# 3. Funciones en R
+# --------------------------------------------------------------------------
 elevado_al_cuadrado <- function(numero) {
   return(numero^2)
 }
 
 resultado <- elevado_al_cuadrado(4)  # Llamamos la función con el número 4
-print(resultado)
+print(resultado)  # 16
 
+# --------------------------------------------------------------------------
+# 4. Ejercicios de conversión de unidades y humedad
+# --------------------------------------------------------------------------
 
-# ---- Ejercicios de conversión de unidades y humedad ----
-
-# 1. Convertir temperatura de Celsius a Kelvin
+# 4.1. Convertir temperatura de Celsius a Kelvin
 celsius_a_kelvin <- function(celsius) {
   return(celsius + 273.15)
 }
-print(celsius_a_kelvin(25))  # Convertimos 25°C a Kelvin
+print(celsius_a_kelvin(25))  # Convertimos 25°C a Kelvin: 298.15 K
 
-# 2. Cálculo de humedad absoluta (aproximación simple)
+# 4.2. Cálculo de humedad absoluta (aproximación simple)
+# Presión de vapor en kPa, temperatura en °C; el resultado es la humedad
+# absoluta en g/m^3.
 humedad_absoluta <- function(presion_vapor, temperatura) {
   return((217 * presion_vapor) / (temperatura + 273.15))
 }
-print(humedad_absoluta(2.3, 25))  # Ejemplo con P_v = 2.3 kPa y T = 25°C
+print(humedad_absoluta(2.3, 25))  # Ejemplo con P_v = 2.3 kPa y T = 25°C: 1.67 g/m^3
 
-# 3. Conversión de presión de kPa a atm
+# 4.3. Conversión de presión de kPa a atm
 kpa_a_atm <- function(presion_kpa) {
   return(presion_kpa / 101.325)
 }
-print(kpa_a_atm(101.325))  # 1 atm en kPa
+print(kpa_a_atm(101.325))  # 101.325 kPa = 1 atm
 
-# 4. Calcular la humedad relativa (HR en porcentaje)
+# 4.4. Calcular la humedad relativa (HR en porcentaje)
+# Presión de vapor y presión de saturación en las mismas unidades (kPa).
 humedad_relativa <- function(presion_vapor, presion_saturacion) {
   return((presion_vapor / presion_saturacion) * 100)
 }
-print(humedad_relativa(2.3, 3.1))  # Ejemplo con valores en kPa
+print(humedad_relativa(2.3, 3.1))  # Ejemplo con valores en kPa: 74.2 %
 
-
-# ---- Flujo laminar y turbulento, Número de Reynolds ----
+# --------------------------------------------------------------------------
+# 5. Flujo laminar y turbulento, Número de Reynolds
+# --------------------------------------------------------------------------
 
 # Cálculo del Número de Reynolds
 numero_reynolds <- function(densidad, velocidad, diametro, viscosidad) {
@@ -86,7 +99,7 @@ numero_reynolds <- function(densidad, velocidad, diametro, viscosidad) {
 tipo_flujo <- function(re) {
   if (re < 2000) {
     return("Flujo Laminar")
-  } else if (re >= 2000 & re <= 4000) {
+  } else if (re >= 2000 && re <= 4000) {
     return("Flujo Transicional")
   } else {
     return("Flujo Turbulento")
@@ -100,5 +113,21 @@ diametro <- 0.05  # m
 viscosidad <- 0.001  # Pa.s (para agua a 20°C)
 
 re <- numero_reynolds(densidad, velocidad, diametro, viscosidad)
-print(paste("Número de Reynolds:", re))
-print(paste("Tipo de flujo:", tipo_flujo(re)))
+print(paste("Número de Reynolds:", re))  # 100000
+print(paste("Tipo de flujo:", tipo_flujo(re)))  # Flujo Turbulento
+
+# --------------------------------------------------------------------------
+# Qué aprendimos
+# --------------------------------------------------------------------------
+# - En R se asignan valores con <- y se opera con +, -, * y /.
+# - Un vector se crea con c() y sus elementos se consultan por posición
+#   (el primer elemento es la posición 1).
+# - Una función se define con function() y se llama con sus argumentos:
+#   sirve para convertir unidades y para calcular cantidades como la
+#   humedad absoluta (g/m^3), la humedad relativa (%) y el número de
+#   Reynolds (adimensional).
+# - El número de Reynolds compara fuerzas de inercia y viscosas: por
+#   debajo de 2000 el flujo es laminar, entre 2000 y 4000 es
+#   transicional y por encima de 4000 es turbulento. Con los valores del
+#   ejemplo (agua a 2 m/s en un tubo de 0.05 m), Re = 100000: flujo
+#   turbulento.
