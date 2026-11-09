@@ -69,9 +69,9 @@ print(celsius_a_kelvin(25))  # Convertimos 25°C a Kelvin: 298.15 K
 # Presión de vapor en kPa, temperatura en °C; el resultado es la humedad
 # absoluta en g/m^3.
 humedad_absoluta <- function(presion_vapor, temperatura) {
-  return((217 * presion_vapor) / (temperatura + 273.15))
+  return((2167 * presion_vapor) / (temperatura + 273.15))
 }
-print(humedad_absoluta(2.3, 25))  # Ejemplo con P_v = 2.3 kPa y T = 25°C: 1.67 g/m^3
+print(humedad_absoluta(2.3, 25))  # Ejemplo con P_v = 2.3 kPa y T = 25°C: 16.72 g/m^3
 
 # 4.3. Conversión de presión de kPa a atm
 kpa_a_atm <- function(presion_kpa) {
