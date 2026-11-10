@@ -1,0 +1,236 @@
+# ==========================================================================
+# Introducción a R - Objetos y vectores
+# ==========================================================================
+# Autor: Dr. José Juan Torres Martínez
+# Docente de Ciencias Químicas
+# Universidad Autónoma de San Luis Potosí (UASLP)
+# México
+#
+# Material académico para estudiantes
+# Serie "Introducción a R" — Clase 2
+#
+# Descripción: qué es un objeto en R, los tipos de datos básicos y cómo
+# se construyen y se usan los vectores. Los datos de esta clase son
+# mediciones reales de laboratorio: la densidad óptica a 680 nm (OD680)
+# de un cultivo de Chlorella vulgaris, medida cada mañana durante 7 días,
+# junto con la temperatura del cultivo y su pH. Todos los valores que se
+# calculan en este script se derivan de esas mediciones.
+# ==========================================================================
+
+
+# --------------------------------------------------------------------------
+# 1. Qué es un objeto
+# --------------------------------------------------------------------------
+# En R, todo lo que guardamos tiene un nombre: eso es un objeto. Para
+# crear un objeto se usa el operador de asignación <- (una flecha que
+# apunta del valor hacia el nombre). La flecha se lee como "toma el valor".
+#
+# Ejemplo: guardamos la temperatura de hoy en el objeto temperatura_hoy.
+temperatura_hoy <- 25.1  # temperatura del cultivo, en grados Celsius
+
+# Para ver lo que contiene un objeto, escribimos su nombre y lo ejecutamos.
+print(temperatura_hoy)
+
+# ls() muestra todos los objetos que hemos creado en esta sesión.
+print(ls())
+
+# class() dice de qué tipo es un objeto.
+print(class(temperatura_hoy))  # "numeric": un número
+
+# Los tipos de datos más comunes en R son tres:
+# - numeric:   números con decimales, como 25.1 o 0.52
+# - character: texto entre comillas, como "Chlorella vulgaris"
+# - logical:   TRUE o FALSE (verdadero o falso)
+especie <- "Chlorella vulgaris"  # texto: tipo character
+cultivo_activo <- TRUE           # verdadero: tipo logical
+print(class(especie))
+print(class(cultivo_activo))
+
+# Para borrar un objeto que ya no necesitamos se usa rm().
+objeto_temporal <- 99
+rm(objeto_temporal)
+
+
+# --------------------------------------------------------------------------
+# 2. Los datos: mediciones del cultivo
+# --------------------------------------------------------------------------
+# Tabla de mediciones (7 días, una medición por mañana):
+#
+#   día        0     1     2     3     4     5     6
+#   OD680   0.12  0.18  0.31  0.52  0.83  1.24  1.58
+#   temp °C 24.8  25.1  24.9  25.3  25.0  25.2  24.7
+#   pH       7.1   7.2   7.0   7.3   7.2   7.1   7.0
+#
+# La OD680 es la densidad óptica medida a 680 nm: un número adimensional
+# (sin unidades) que crece cuando hay más células de microalga en el
+# cultivo. La temperatura está en grados Celsius (°C) y el pH es
+# adimensional. Los mismos valores están en el archivo
+# datos_clase_02.csv que acompaña a esta clase.
+
+# Un vector es una lista ordenada de valores del mismo tipo. Se crea con
+# la función c(), que significa "combinar".
+od680 <- c(0.12, 0.18, 0.31, 0.52, 0.83, 1.24, 1.58)
+temperatura <- c(24.8, 25.1, 24.9, 25.3, 25.0, 25.2, 24.7)
+ph <- c(7.1, 7.2, 7.0, 7.3, 7.2, 7.1, 7.0)
+
+# length() dice cuántos elementos tiene un vector.
+print(length(od680))  # 7 mediciones
+
+# A cada medición le ponemos un nombre con names(): así sabemos a qué
+# día corresponde cada valor sin tener que contar posiciones.
+dia <- c("dia 0", "dia 1", "dia 2", "dia 3", "dia 4", "dia 5", "dia 6")
+names(od680) <- dia
+names(temperatura) <- dia
+names(ph) <- dia
+print(od680)
+
+
+# --------------------------------------------------------------------------
+# 3. Crear vectores sin escribir valor por valor
+# --------------------------------------------------------------------------
+# El operador : crea una secuencia de enteros, de uno en uno.
+dias <- 0:6
+print(dias)
+
+# seq() crea una secuencia con el paso que le pidamos: de 0 a 6, de 2 en 2.
+print(seq(from = 0, to = 6, by = 2))
+
+# rep() repite un valor varias veces. Aquí, el código del experimento,
+# "EXP-01", se repite una vez por cada medición.
+experimento <- rep("EXP-01", times = 7)
+print(experimento)
+
+# Un vector de texto (character) con el identificador de cada muestra.
+muestra <- c("M1", "M2", "M3", "M4", "M5", "M6", "M7")
+print(muestra)
+
+# Un vector lógico (logical): TRUE cuando la OD680 ya pasó de 0.5.
+# Se construye con una comparación, no escribiendo TRUE y FALSE a mano.
+supera_0.5 <- od680 > 0.5
+print(supera_0.5)
+
+
+# --------------------------------------------------------------------------
+# 4. Consultar elementos de un vector por su posición
+# --------------------------------------------------------------------------
+# En R, el primer elemento está en la posición 1 (no en la 0).
+print(od680[1])   # primera medición: 0.12
+print(od680[7])   # última medición: 1.58
+
+# Con un vector de posiciones pedimos varios elementos a la vez.
+print(od680[c(1, 3, 5)])
+
+# Con un número negativo se pide todo MENOS esa posición.
+print(od680[-1])  # todas las mediciones excepto la del día 0
+
+# Con su nombre también se puede consultar un elemento.
+print(od680["dia 3"])
+
+# which() devuelve las posiciones donde se cumple una condición: las
+# posiciones 4, 5, 6 y 7, que corresponden a los días 3, 4, 5 y 6.
+print(which(od680 > 0.5))
+
+
+# --------------------------------------------------------------------------
+# 5. Filtrar con vectores lógicos
+# --------------------------------------------------------------------------
+# Si ponemos un vector lógico entre corchetes, R se queda solo con los
+# elementos donde hay TRUE. Así filtramos las mediciones que nos interesan.
+print(od680[supera_0.5])  # OD680 mayor que 0.5
+
+# Días en que la temperatura estuvo por arriba de 25 °C.
+print(temperatura[temperatura > 25])
+
+# El operador %in% pregunta si un valor está dentro de un vector.
+print("M4" %in% muestra)  # TRUE: la muestra M4 sí está en la lista
+
+
+# --------------------------------------------------------------------------
+# 6. Operar con vectores: todo se calcula a partir de los datos
+# --------------------------------------------------------------------------
+# Las operaciones se aplican elemento por elemento. Por ejemplo, para
+# pasar la temperatura de Celsius a Kelvin sumamos 273.15 a cada valor.
+temperatura_kelvin <- temperatura + 273.15
+print(temperatura_kelvin)
+
+# Resumen de cada variable, calculado desde las mediciones:
+# media, desviación estándar, mínimo y máximo.
+print(paste("OD680 media:", mean(od680)))
+print(paste("OD680 desviación estándar:", sd(od680)))
+print(paste("OD680 mínima:", min(od680), "- máxima:", max(od680)))
+print(paste("Temperatura media (°C):", mean(temperatura)))
+print(paste("pH medio:", mean(ph)))
+
+# Crecimiento entre días consecutivos: diff() resta cada valor menos el
+# anterior. El aumento de OD680 entre un día y el siguiente es:
+aumento_diario <- diff(od680)
+print(aumento_diario)
+
+# Aumento relativo (en proporción): cuánto creció respecto al día anterior.
+aumento_relativo <- diff(od680) / od680[1:6]
+print(aumento_relativo)
+
+# Cuántas veces se multiplicó la OD680 del día 0 al día 6.
+print(paste("Veces que creció la OD680:", od680[7] / od680[1]))
+
+# Cuántos días la temperatura pasó de 25 °C: sum() cuenta los TRUE.
+print(paste("Días con temperatura mayor que 25 °C:",
+            sum(temperatura > 25)))
+
+
+# --------------------------------------------------------------------------
+# 7. Gráfico: la OD680 crece con los días
+# --------------------------------------------------------------------------
+# Un vector también se puede ver: plot() dibuja los valores de od680
+# frente a los días. El argumento type = "b" dibuja puntos y línea a la
+# vez (b de "both"), pch = 19 pide puntos rellenos y lwd = 2 hace la
+# línea más gruesa. Los gráficos con ggplot2 llegan en la clase 9; aquí
+# usamos el gráfico base de R, que es el más directo para ver un vector.
+#
+# Guardar el gráfico como imagen PNG a 300 dpi: png() abre el archivo
+# de imagen, plot() dibuja dentro de él y dev.off() lo cierra y lo guarda.
+# Las etiquetas del gráfico van sin acentos: en algunos equipos el
+# dispositivo de gráficos no muestra bien los acentos y salen signos
+# raros. El texto de la lección sí lleva acentos.
+png("grafico_clase_02_od680.png", width = 7, height = 5,
+    units = "in", res = 300)
+plot(dias, od680,
+     type = "b", pch = 19, col = "#2E7D32", lwd = 2,
+     main = "Crecimiento de Chlorella vulgaris",
+     sub = "Densidad optica a 680 nm durante 7 dias",
+     xlab = "Dia de cultivo (dias)",
+     ylab = "OD680 (adimensional)")
+dev.off()
+
+# Interpretación
+# El gráfico muestra la densidad óptica a 680 nm (OD680) de un cultivo
+# de Chlorella vulgaris a lo largo de 7 días de cultivo. El eje horizontal
+# (x) es el día de cultivo, en días, del día 0 al día 6. El eje vertical
+# (y) es la OD680, un número adimensional (sin unidades) que aumenta
+# cuando hay más células en el cultivo. Cada punto es la medición de una
+# mañana y la línea une las mediciones en orden. El patrón es claro: la
+# OD680 sube todos los días, de 0.12 el día 0 a 1.58 el día 6, y sube cada
+# vez más rápido: entre el día 0 y el día 1 aumenta 0.06, mientras que
+# entre el día 5 y el día 6 aumenta 0.34. Eso significa que el cultivo
+# está en crecimiento activo y que las células se están multiplicando
+# cada vez más rápido durante esta semana.
+
+# Interpretación
+
+
+# --------------------------------------------------------------------------
+# Qué aprendimos
+# --------------------------------------------------------------------------
+# - Un objeto guarda un valor con un nombre, usando <-, y puede ser
+#   numérico, de texto (character) o lógico (TRUE/FALSE).
+# - Un vector es una lista ordenada de valores del mismo tipo y se crea
+#   con c(). También se puede crear con : , seq() y rep().
+# - Los elementos se consultan por su posición (la primera es la 1), por
+#   su nombre, o filtrando con un vector lógico entre corchetes.
+# - Las operaciones con vectores se hacen elemento por elemento, así que
+#   la media, la desviación estándar, los aumentos diarios y el aumento
+#   relativo se calculan directamente desde las mediciones.
+# - En este cultivo de Chlorella vulgaris la OD680 pasó de 0.12 a 1.58
+#   en 7 días: el cultivo creció unas 13 veces, con aumentos diarios
+#   cada vez mayores, mientras la temperatura se mantuvo cerca de
+#   25 °C y el pH cerca de 7.1.

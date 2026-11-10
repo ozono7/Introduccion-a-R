@@ -8,6 +8,13 @@ punto de partida para estudiantes que nunca han programado.
 
 - **Clase 1:** introducción a R: conceptos básicos, comentarios,
   asignación de variables y operaciones fundamentales.
+- **Clase 2:** objetos y vectores: qué es un objeto, tipos de datos
+  (numeric, character, logical), crear vectores con `c()`, `:` , `seq()`
+  y `rep()`, consultar elementos por posición y por nombre, filtrar con
+  vectores lógicos y operar con vectores, con las mediciones de OD680,
+  temperatura y pH de un cultivo de *Chlorella vulgaris* durante 7 días.
+  Incluye el archivo `datos_clase_02.csv` con las mediciones y un
+  gráfico de la OD680 frente al día de cultivo.
 
 ## Cómo usarlo
 
