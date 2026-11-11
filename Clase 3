@@ -1,0 +1,287 @@
+# ==========================================================================
+# Introducción a R - Data frames
+# ==========================================================================
+# Autor: Dr. José Juan Torres Martínez
+# Docente de Ciencias Químicas
+# Universidad Autónoma de San Luis Potosí (UASLP)
+# México
+#
+# Material académico para estudiantes
+# Serie "Introducción a R — Lección 03"
+#
+# Descripción: qué es un data frame, cómo se construye a partir de
+# vectores, cómo se explora, cómo se consultan sus filas y columnas,
+# cómo se agregan columnas calculadas, cómo se resume por grupos y cómo
+# se lee el mismo conjunto de datos desde un archivo CSV. Los datos de
+# esta clase son mediciones reales de laboratorio: muestras de agua
+# residual tomadas a la entrada y a la salida de un sistema de
+# tratamiento, durante 5 días. En cada muestra se midieron el pH, la
+# temperatura, la turbidez, la demanda química de oxígeno (DQO) y la
+# conductividad. Todos los valores que se calculan en este script se
+# derivan de esas mediciones.
+# ==========================================================================
+
+
+# --------------------------------------------------------------------------
+# 1. Qué es un data frame
+# --------------------------------------------------------------------------
+# Un data frame es una tabla: cada columna es un vector (una variable
+# medida) y cada fila es una observación (una muestra). A diferencia de
+# un vector, que solo guarda valores del mismo tipo, un data frame puede
+# mezclar columnas de tipos distintos: texto, números y valores lógicos.
+# Es la estructura que más se usa en R para trabajar con datos de
+# laboratorio, porque una tabla es justo como se anotan las mediciones.
+
+# Primero armamos los vectores, uno por cada variable medida. Son 10
+# muestras: 5 tomadas a la entrada del sistema de tratamiento (E1 a E5)
+# y 5 tomadas a la salida (S1 a S5), una de cada punto por día.
+muestra <- c("E1", "S1", "E2", "S2", "E3", "S3", "E4", "S4", "E5", "S5")
+dia <- c(1, 1, 2, 2, 3, 3, 4, 4, 5, 5)
+punto <- c("entrada", "salida", "entrada", "salida", "entrada",
+           "salida", "entrada", "salida", "entrada", "salida")
+
+# Mediciones de cada muestra:
+# - pH: adimensional
+# - temperatura: en grados Celsius (°C)
+# - turbidez: en NTU (unidades nefelométricas de turbidez)
+# - DQO: demanda química de oxígeno, en miligramos por litro (mg/L)
+# - conductividad: en microsiemens por centímetro (µS/cm)
+ph <- c(7.2, 7.5, 7.0, 7.4, 7.3, 7.6, 7.1, 7.5, 7.4, 7.7)
+temperatura_c <- c(23.5, 23.8, 24.1, 24.0, 23.9, 24.2, 24.3, 24.1, 23.7, 24.0)
+turbidez_ntu <- c(195, 18, 210, 22, 188, 15, 205, 20, 198, 17)
+dqo_mg_l <- c(450, 78, 472, 85, 438, 69, 465, 82, 455, 74)
+conductividad_us_cm <- c(1250, 980, 1310, 1010, 1275, 965, 1290, 990, 1260, 975)
+
+# data.frame() junta los vectores en una tabla. Cada vector se vuelve
+# una columna y el nombre que le damos a la izquierda del = es el nombre
+# de esa columna. Todos los vectores deben tener la misma longitud.
+agua <- data.frame(
+  muestra = muestra,
+  dia = dia,
+  punto = punto,
+  ph = ph,
+  temperatura_c = temperatura_c,
+  turbidez_ntu = turbidez_ntu,
+  dqo_mg_l = dqo_mg_l,
+  conductividad_us_cm = conductividad_us_cm
+)
+print(agua)
+
+
+# --------------------------------------------------------------------------
+# 2. Explorar el data frame
+# --------------------------------------------------------------------------
+# str() muestra la estructura: cuántas filas y columnas hay, el nombre
+# de cada columna y de qué tipo es.
+str(agua)
+
+# dim() da las dimensiones: filas y columnas.
+print(dim(agua))  # 10 filas (muestras) y 8 columnas (variables)
+
+# nrow() y ncol() dan por separado el número de filas y de columnas.
+print(nrow(agua))
+print(ncol(agua))
+
+# names() muestra los nombres de las columnas.
+print(names(agua))
+
+# head() muestra las primeras 6 filas y tail() las últimas 6. Sirven
+# para echar un vistazo rápido sin imprimir toda la tabla.
+print(head(agua))
+print(tail(agua, n = 3))  # solo las últimas 3 filas
+
+# summary() calcula un resumen de cada columna numérica: mínimo,
+# primer cuartil, mediana, media, tercer cuartil y máximo.
+print(summary(agua))
+
+
+# --------------------------------------------------------------------------
+# 3. Consultar columnas y filas
+# --------------------------------------------------------------------------
+# Con el signo $ se pide una columna por su nombre. El resultado es un
+# vector, así que se le pueden aplicar las funciones de la clase 2.
+print(agua$dqo_mg_l)
+print(paste("DQO media (mg/L):", mean(agua$dqo_mg_l)))
+
+# Con corchetes se piden filas y columnas por su posición: [filas, columnas].
+# La primera fila completa (la muestra E1):
+print(agua[1, ])
+
+# La columna 4 completa (el pH de todas las muestras):
+print(agua[, 4])
+
+# Las primeras 3 filas y las columnas 1 y 7 (muestra y DQO):
+print(agua[1:3, c(1, 7)])
+
+# También se puede pedir una columna por su nombre entre corchetes
+# dobles, igual que con $.
+print(agua[["ph"]])
+
+# Para saber cuántas muestras hay de cada punto se usa table().
+print(table(agua$punto))
+
+
+# --------------------------------------------------------------------------
+# 4. Filtrar filas con condiciones
+# --------------------------------------------------------------------------
+# Igual que con los vectores, una condición entre corchetes se queda
+# solo con las filas donde la condición es TRUE.
+# Solo las muestras tomadas a la salida del tratamiento:
+salida <- agua[agua$punto == "salida", ]
+print(salida)
+
+# Solo las muestras con DQO mayor que 400 mg/L (todas de entrada):
+print(agua[agua$dqo_mg_l > 400, ])
+
+# Con subset() se escribe lo mismo de forma más legible: no hace falta
+# repetir el nombre del data frame dentro de la condición.
+print(subset(agua, punto == "entrada" & turbidez_ntu > 200))
+
+# Con subset() también se eligen columnas: el argumento select pide
+# solo las columnas que nos interesan.
+print(subset(agua, dia >= 4, select = c(muestra, punto, dqo_mg_l)))
+
+
+# --------------------------------------------------------------------------
+# 5. Agregar columnas calculadas a partir de los datos
+# --------------------------------------------------------------------------
+# Una columna nueva se crea asignando un cálculo con $. La DQO también
+# se puede expresar en gramos por litro (g/L): se divide entre 1000.
+agua$dqo_g_l <- agua$dqo_mg_l / 1000
+print(agua[, c("muestra", "dqo_mg_l", "dqo_g_l")])
+
+# ifelse() clasifica cada fila según una condición: si el pH está entre
+# 6.5 y 8.5 la muestra queda como "adecuado"; si no, "revisar". El pH
+# de un agua residual tratada suele considerarse adecuado entre 6.5 y 8.5.
+agua$ph_clase <- ifelse(agua$ph >= 6.5 & agua$ph <= 8.5,
+                        "adecuado", "revisar")
+print(table(agua$ph_clase))
+
+# Una columna lógica: TRUE cuando la turbidez pasa de 100 NTU.
+agua$turbidez_alta <- agua$turbidez_ntu > 100
+print(agua[, c("muestra", "punto", "turbidez_ntu", "turbidez_alta")])
+
+
+# --------------------------------------------------------------------------
+# 6. Resumir por grupos: ¿qué cambió el tratamiento?
+# --------------------------------------------------------------------------
+# aggregate() calcula un resumen por grupos. Aquí, la DQO media y la
+# turbidez media de las muestras de entrada y de salida, por separado.
+dqo_por_punto <- aggregate(dqo_mg_l ~ punto, data = agua, FUN = mean)
+print(dqo_por_punto)
+turbidez_por_punto <- aggregate(turbidez_ntu ~ punto, data = agua, FUN = mean)
+print(turbidez_por_punto)
+
+# La remoción de DQO del tratamiento se calcula desde esas medias: qué
+# porcentaje de la DQO de entrada ya no está en la salida.
+dqo_entrada <- dqo_por_punto$dqo_mg_l[dqo_por_punto$punto == "entrada"]
+dqo_salida <- dqo_por_punto$dqo_mg_l[dqo_por_punto$punto == "salida"]
+remocion_dqo <- (dqo_entrada - dqo_salida) / dqo_entrada * 100
+print(paste("Remocion de DQO del tratamiento (%):", remocion_dqo))
+
+# Lo mismo para la turbidez.
+turbidez_entrada <- turbidez_por_punto$turbidez_ntu[turbidez_por_punto$punto == "entrada"]
+turbidez_salida <- turbidez_por_punto$turbidez_ntu[turbidez_por_punto$punto == "salida"]
+remocion_turbidez <- (turbidez_entrada - turbidez_salida) / turbidez_entrada * 100
+print(paste("Remocion de turbidez del tratamiento (%):", remocion_turbidez))
+
+
+# --------------------------------------------------------------------------
+# 7. Ordenar las filas
+# --------------------------------------------------------------------------
+# order() devuelve las posiciones que pondrían un vector en orden. Con
+# esas posiciones se reordenan las filas del data frame. Aquí, de mayor
+# a menor DQO, para ver primero las muestras más cargadas.
+orden_dqo <- order(agua$dqo_mg_l, decreasing = TRUE)
+print(agua[orden_dqo, c("muestra", "punto", "dqo_mg_l")])
+
+
+# --------------------------------------------------------------------------
+# 8. Leer los mismos datos desde un archivo CSV
+# --------------------------------------------------------------------------
+# Los mismos datos están en el archivo datos_clase_03.csv que acompaña
+# a esta clase. read.csv() lo lee y lo convierte en un data frame.
+# Conviene poner el archivo CSV en la misma carpeta que este script.
+agua_csv <- read.csv("datos_clase_03.csv")
+print(head(agua_csv))
+
+# Comprobamos que el archivo trae las mismas 10 muestras y que la DQO
+# media coincide con la del data frame que armamos a mano.
+print(paste("Filas en el CSV:", nrow(agua_csv)))
+print(paste("DQO media del CSV (mg/L):", mean(agua_csv$dqo_mg_l)))
+print(paste("DQO media del data frame (mg/L):", mean(agua$dqo_mg_l)))
+
+# write.csv() hace lo contrario: guarda un data frame en un archivo CSV.
+# Aquí guardamos la tabla ya ordenada por DQO, sin la columna de números
+# de fila que R agrega por defecto (row.names = FALSE).
+write.csv(agua[orden_dqo, ], "agua_ordenada_por_dqo.csv", row.names = FALSE)
+
+
+# --------------------------------------------------------------------------
+# 9. Gráfico: turbidez frente a DQO, por punto de muestreo
+# --------------------------------------------------------------------------
+# Un data frame también se puede ver: cada punto del gráfico es una
+# muestra, con su turbidez en el eje x y su DQO en el eje y. El color
+# indica si la muestra es de entrada o de salida. Los gráficos con
+# ggplot2 llegan en la clase 9; aquí usamos el gráfico base de R, que es
+# el más directo para ver las columnas de un data frame.
+#
+# Guardar el gráfico como imagen PNG a 300 dpi: png() abre el archivo
+# de imagen, plot() dibuja dentro de él y dev.off() lo cierra y lo guarda.
+# Las etiquetas del gráfico van sin acentos: en algunos equipos el
+# dispositivo de gráficos no muestra bien los acentos y salen signos
+# raros. El texto de la lección sí lleva acentos.
+png("grafico_clase_03_dqo_turbidez.png", width = 7, height = 5,
+    units = "in", res = 300)
+plot(agua$turbidez_ntu, agua$dqo_mg_l,
+     pch = 19, cex = 1.4,
+     col = ifelse(agua$punto == "entrada", "#C62828", "#2E7D32"),
+     main = "DQO frente a turbidez en agua residual",
+     sub = "Muestras a la entrada y a la salida del tratamiento",
+     xlab = "Turbidez (NTU)",
+     ylab = "DQO (mg/L)")
+legend("topleft",
+       legend = c("entrada", "salida"),
+       col = c("#C62828", "#2E7D32"),
+       pch = 19)
+dev.off()
+
+# Interpretación
+# El gráfico muestra la demanda química de oxígeno (DQO) de 10 muestras
+# de agua residual frente a su turbidez. El eje horizontal (x) es la
+# turbidez, en NTU (unidades nefelométricas de turbidez): mide qué tan
+# turbia está el agua. El eje vertical (y) es la DQO, en miligramos por
+# litro (mg/L): mide cuánta materia oxidable hay en el agua. Cada punto
+# es una muestra y el color indica dónde se tomó: rojo a la entrada del
+# tratamiento y verde a la salida. El patrón es claro: las muestras se
+# agrupan en dos nubes separadas. Las de entrada tienen turbidez alta,
+# entre 188 y 210 NTU, y DQO alta, entre 438 y 472 mg/L. Las de salida
+# tienen turbidez baja, entre 15 y 22 NTU, y DQO baja, entre 69 y 85 mg/L.
+# Dentro de cada nube, a mayor turbidez corresponde mayor DQO, lo que
+# tiene sentido: el material que enturbia el agua es parte de la materia
+# que la DQO mide. La separación entre las nubes muestra que el
+# tratamiento bajó la DQO media de 456 mg/L a 77.6 mg/L, una remoción de
+# alrededor de 83%, y la turbidez media de 199.2 NTU a 18.4 NTU, una
+# remoción de alrededor de 91%.
+
+
+# --------------------------------------------------------------------------
+# Qué aprendimos
+# --------------------------------------------------------------------------
+# - Un data frame es una tabla: cada columna es un vector (una variable)
+#   y cada fila es una observación (una muestra). Se crea con
+#   data.frame() a partir de vectores de la misma longitud.
+# - Para explorar un data frame se usan str(), dim(), nrow(), ncol(),
+#   names(), head(), tail() y summary().
+# - Las columnas se consultan con $ o con corchetes, y las filas se
+#   filtran con condiciones o con subset().
+# - Se pueden agregar columnas calculadas desde los datos, como la DQO
+#   en g/L o una clasificación del pH con ifelse().
+# - Con aggregate() se resume una variable por grupos, y con order() se
+#   ordenan las filas. Aquí sirvieron para calcular que el tratamiento
+#   removió alrededor de 83% de la DQO y alrededor de 91% de la turbidez.
+# - Los datos también se pueden leer desde un archivo CSV con read.csv()
+#   y guardar un data frame en CSV con write.csv().
+# - En este sistema de tratamiento, el agua que entra trae DQO y
+#   turbidez altas, y el agua que sale trae ambas mucho más bajas: el
+#   tratamiento está funcionando.

@@ -1,0 +1,11 @@
+muestra,dia,punto,ph,temperatura_c,turbidez_ntu,dqo_mg_l,conductividad_us_cm
+E1,1,entrada,7.2,23.5,195,450,1250
+S1,1,salida,7.5,23.8,18,78,980
+E2,2,entrada,7.0,24.1,210,472,1310
+S2,2,salida,7.4,24.0,22,85,1010
+E3,3,entrada,7.3,23.9,188,438,1275
+S3,3,salida,7.6,24.2,15,69,965
+E4,4,entrada,7.1,24.3,205,465,1290
+S4,4,salida,7.5,24.1,20,82,990
+E5,5,entrada,7.4,23.7,198,455,1260
+S5,5,salida,7.7,24.0,17,74,975
