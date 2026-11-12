@@ -25,6 +25,18 @@ punto de partida para estudiantes que nunca han programado.
   residual tomadas a la entrada y a la salida de un sistema de
   tratamiento durante 5 días. Incluye el archivo `datos_clase_03.csv`
   con las mediciones y un gráfico de la DQO frente a la turbidez.
+- **Clase 4:** leer y escribir archivos: el directorio de trabajo con
+  `getwd()` y `list.files()`, comprobar que un archivo existe con
+  `file.exists()`, leer archivos CSV con `read.csv()`, escribir
+  resultados con `write.csv()`, leer y escribir texto con `readLines()`
+  y `writeLines()`, y guardar y cargar objetos de R con `saveRDS()` y
+  `readRDS()`. Trabaja con la curva de calibración de un ensayo de
+  Bradford (patrones de BSA de 0 a 400 µg/mL, absorbancia a 595 nm) y
+  con cuatro muestras problema cuya concentración se calcula con la
+  recta ajustada (pendiente 0.00252, R2 0.999). Incluye los archivos
+  `datos_clase_04.csv` y `muestras_clase_04.csv` con las mediciones, el
+  archivo `resultados_clase_04.csv` con las concentraciones calculadas y
+  un gráfico de la curva de calibración.
 
 ## Cómo usarlo
 

@@ -1,0 +1,6 @@
+Notas de laboratorio - curva de calibracion de Bradford (BSA)
+Fecha de la sesion: 2026-11-12
+Pendiente de la recta: 0.00252 unidades de absorbancia por (ug/mL)
+Ordenada al origen: 0.0239 (adimensional)
+R2 del ajuste: 0.999
+Muestras cuantificadas: 4

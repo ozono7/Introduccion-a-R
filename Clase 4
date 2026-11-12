@@ -1,0 +1,243 @@
+# ==========================================================================
+# Introducción a R - Leer y escribir archivos
+# ==========================================================================
+# Autor: Dr. José Juan Torres Martínez
+# Docente de Ciencias Químicas
+# Universidad Autónoma de San Luis Potosí (UASLP)
+# México
+#
+# Material académico para estudiantes
+# Serie "Introducción a R — Lección 04"
+#
+# Descripción: cómo leer y escribir archivos en R. Primero se revisa el
+# directorio de trabajo, luego se lee un archivo CSV con la curva de
+# calibración de un ensayo de Bradford (proteína patrón BSA), se ajusta
+# la recta de calibración con los datos leídos, se lee un segundo archivo
+# con muestras problema, se calculan sus concentraciones, se escriben los
+# resultados en un archivo nuevo, se guardan notas en un archivo de texto
+# y se guarda el modelo ajustado como objeto de R. Todos los valores que
+# se calculan en este script se derivan de las mediciones de los archivos.
+#
+# Archivos que usa esta clase:
+#   datos_clase_04.csv     - curva de calibración (patrones de BSA)
+#   muestras_clase_04.csv  - muestras problema (absorbancia y dilución)
+#
+# Archivos que crea esta clase al correrla:
+#   resultados_clase_04.csv   - concentraciones calculadas de las muestras
+#   notas_clase_04.txt        - notas de la sesión
+#   modelo_clase_04.rds       - el modelo lineal guardado como objeto de R
+#   grafico_clase_04_curva.png - curva de calibración
+# ==========================================================================
+
+
+# --------------------------------------------------------------------------
+# 1. El directorio de trabajo
+# --------------------------------------------------------------------------
+# R busca los archivos en una carpeta llamada directorio de trabajo.
+# getwd() dice cuál es esa carpeta en este momento. La función list.files()
+# muestra los archivos que hay en ella: ahí deben estar los dos archivos
+# CSV de esta clase.
+print(getwd())
+print(list.files())
+
+# Antes de leer un archivo conviene comprobar que existe. file.exists()
+# devuelve TRUE si el archivo está en el directorio de trabajo y FALSE
+# si no está. Si devuelve FALSE, hay que mover el archivo a esta carpeta
+# o cambiar el directorio de trabajo con setwd("ruta/a/la/carpeta").
+print(file.exists("datos_clase_04.csv"))
+print(file.exists("muestras_clase_04.csv"))
+
+
+# --------------------------------------------------------------------------
+# 2. Leer un archivo CSV con read.csv()
+# --------------------------------------------------------------------------
+# Los datos de la curva de calibración están en datos_clase_04.csv.
+# Es un ensayo de Bradford: se prepararon patrones de albúmina de suero
+# bovino (BSA) de concentración conocida y se midió su absorbancia a
+# 595 nm en el espectrofotómetro. Cada fila es un patrón.
+#
+# read.csv() lee el archivo y lo guarda como un data frame. Sus
+# argumentos más usados son:
+#   file      : el nombre del archivo (entre comillas)
+#   header    : TRUE si la primera fila tiene los nombres de las columnas
+#   sep       : el carácter que separa las columnas ("," en un CSV)
+#   dec       : el carácter decimal ("." en estos archivos)
+#   stringsAsFactors: FALSE para que el texto quede como texto
+calibracion <- read.csv("datos_clase_04.csv",
+                        header = TRUE,
+                        sep = ",",
+                        dec = ".",
+                        stringsAsFactors = FALSE)
+
+# Revisamos lo que se leyó: str() muestra la estructura y head() las
+# primeras filas. Las columnas son:
+#   concentracion_ug_ml : concentración del patrón de BSA, en µg/mL
+#   absorbancia_595     : absorbancia medida a 595 nm (adimensional)
+str(calibracion)
+print(head(calibracion))
+print(summary(calibracion))
+
+
+# --------------------------------------------------------------------------
+# 3. La recta de calibración con lm()
+# --------------------------------------------------------------------------
+# La absorbancia crece en proporción a la concentración de proteína.
+# lm() ajusta una recta a los datos: absorbancia en función de la
+# concentración. La pendiente y la ordenada al origen salen del ajuste,
+# no se escriben a mano.
+modelo <- lm(absorbancia_595 ~ concentracion_ug_ml, data = calibracion)
+print(summary(modelo))
+
+# coef() extrae los coeficientes del modelo: la ordenada al origen
+# (Intercept) y la pendiente (concentracion_ug_ml). Los guardamos en
+# objetos para usarlos después, al calcular las muestras.
+ordenada <- coef(modelo)[1]
+pendiente <- coef(modelo)[2]
+cat("Ordenada al origen (adimensional):", ordenada, "\n")
+cat("Pendiente (unidades de absorbancia por µg/mL):", pendiente, "\n")
+
+# R2 mide qué tan bien la recta describe los datos: 1 es un ajuste
+# perfecto y 0 es que la recta no explica nada. Se toma del resumen.
+r2 <- summary(modelo)$r.squared
+cat("R2 del ajuste:", r2, "\n")
+
+
+# --------------------------------------------------------------------------
+# 4. Leer un segundo archivo: las muestras problema
+# --------------------------------------------------------------------------
+# En muestras_clase_04.csv están cuatro extractos de proteína de
+# concentración desconocida. De cada uno se midió la absorbancia a
+# 595 nm y se anotó el factor de dilución con el que se midió.
+# Las columnas son:
+#   muestra         : clave de la muestra (M1 a M4)
+#   absorbancia_595 : absorbancia medida a 595 nm (adimensional)
+#   dilucion        : factor de dilución aplicado a la muestra
+muestras <- read.csv("muestras_clase_04.csv",
+                     header = TRUE,
+                     sep = ",",
+                     dec = ".",
+                     stringsAsFactors = FALSE)
+print(muestras)
+
+# La concentración de cada muestra se calcula despejando la recta:
+# concentración = (absorbancia - ordenada) / pendiente.
+# La concentración final multiplica por la dilución, porque la muestra
+# medida estaba diluida y la original es más concentrada.
+muestras$concentracion_medida_ug_ml <-
+  (muestras$absorbancia_595 - ordenada) / pendiente
+muestras$concentracion_final_ug_ml <-
+  muestras$concentracion_medida_ug_ml * muestras$dilucion
+print(muestras)
+
+
+# --------------------------------------------------------------------------
+# 5. Escribir los resultados con write.csv()
+# --------------------------------------------------------------------------
+# write.csv() guarda un data frame en un archivo CSV nuevo. El argumento
+# row.names = FALSE evita que R agregue una columna con los números de
+# fila, que no es parte de los datos.
+write.csv(muestras, "resultados_clase_04.csv", row.names = FALSE)
+
+# Comprobamos que el archivo quedó bien: lo volvemos a leer y
+# comparamos las concentraciones con las que calculamos.
+comprobacion <- read.csv("resultados_clase_04.csv")
+print(comprobacion)
+print(all.equal(comprobacion$concentracion_final_ug_ml,
+                muestras$concentracion_final_ug_ml))
+
+
+# --------------------------------------------------------------------------
+# 6. Archivos de texto: readLines() y writeLines()
+# --------------------------------------------------------------------------
+# No todo son tablas: a veces hay que leer o escribir texto plano, por
+# ejemplo las notas de una sesión de laboratorio. writeLines() escribe
+# un vector de texto, una línea por elemento. Armamos las notas con los
+# valores que calculamos en esta sesión.
+notas <- c(
+  "Notas de laboratorio - curva de calibracion de Bradford (BSA)",
+  paste0("Fecha de la sesion: ", Sys.Date()),
+  paste0("Pendiente de la recta: ", round(pendiente, 6),
+         " unidades de absorbancia por (ug/mL)"),
+  paste0("Ordenada al origen: ", round(ordenada, 4), " (adimensional)"),
+  paste0("R2 del ajuste: ", round(r2, 4)),
+  paste0("Muestras cuantificadas: ", nrow(muestras))
+)
+writeLines(notas, "notas_clase_04.txt")
+
+# readLines() lee un archivo de texto y devuelve un vector: un elemento
+# por línea. Así verificamos lo que se escribió.
+print(readLines("notas_clase_04.txt"))
+
+
+# --------------------------------------------------------------------------
+# 7. Guardar y cargar objetos de R: saveRDS() y readRDS()
+# --------------------------------------------------------------------------
+# Un objeto de R, como el modelo ajustado, se puede guardar en un
+# archivo propio con saveRDS() y volver a cargarlo después con readRDS().
+# Es útil para no tener que repetir el ajuste en otra sesión.
+saveRDS(modelo, "modelo_clase_04.rds")
+modelo_cargado <- readRDS("modelo_clase_04.rds")
+
+# Comprobamos que el modelo cargado es el mismo: sus coeficientes
+# deben ser idénticos a los del modelo original.
+print(identical(coef(modelo), coef(modelo_cargado)))
+
+
+# --------------------------------------------------------------------------
+# 8. Gráfico: la curva de calibración
+# --------------------------------------------------------------------------
+library(ggplot2)
+
+# Los puntos son los patrones medidos y la línea es la recta ajustada
+# con lm(). geom_smooth(method = "lm") dibuja esa misma recta.
+grafico <- ggplot(calibracion,
+                  aes(x = concentracion_ug_ml, y = absorbancia_595)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  labs(title = "Curva de calibración de Bradford (BSA)",
+       x = "Concentración de proteína (µg/mL)",
+       y = "Absorbancia a 595 nm") +
+  theme_minimal()
+
+print(grafico)
+
+# ggsave() guarda el gráfico como imagen PNG, a 300 dpi.
+ggsave("grafico_clase_04_curva.png", plot = grafico,
+       width = 7, height = 5, dpi = 300)
+
+# Interpretación:
+# El gráfico muestra la curva de calibración del ensayo de Bradford:
+# cada punto es un patrón de BSA de concentración conocida y la línea
+# es la recta ajustada a esos puntos.
+# El eje horizontal (x) es la concentración de proteína, en microgramos
+# por mililitro (µg/mL), de 0 a 400 µg/mL. El eje vertical (y) es la
+# absorbancia medida a 595 nm, que es adimensional: no tiene unidades
+# porque es el logaritmo de un cociente de intensidades de luz.
+# Los puntos suben en línea recta: a mayor concentración de proteína,
+# mayor absorbancia. La recta ajustada tiene pendiente 0.00252 unidades
+# de absorbancia por µg/mL y ordenada al origen 0.0239, con un R2 de
+# 0.999, lo que significa que dentro de este intervalo la absorbancia es
+# proporcional a la concentración y la recta sirve para calcular la
+# concentración de una muestra nueva a partir de su absorbancia, como se
+# hizo con las muestras M1 a M4.
+
+
+# --------------------------------------------------------------------------
+# 9. Qué aprendimos
+# --------------------------------------------------------------------------
+# - El directorio de trabajo es la carpeta donde R busca y guarda los
+#   archivos; getwd() lo muestra y list.files() lista su contenido.
+# - read.csv() lee un archivo CSV y lo convierte en un data frame; sus
+#   argumentos header, sep y dec describen cómo está escrito el archivo.
+# - file.exists() comprueba que un archivo está antes de intentar leerlo.
+# - Una recta de calibración se ajusta con lm() y sus coeficientes se
+#   extraen con coef(); con ellos se calcula la concentración de
+#   muestras desconocidas a partir de su absorbancia.
+# - write.csv() guarda un data frame en un archivo nuevo; row.names =
+#   FALSE evita agregar una columna con los números de fila.
+# - readLines() y writeLines() leen y escriben archivos de texto plano,
+#   línea por línea.
+# - saveRDS() y readRDS() guardan y cargan un objeto de R para usarlo
+#   en otra sesión sin repetir el cálculo.
+# - Cada resultado de esta clase se derivó de las mediciones de los
+#   archivos CSV: nada se escribió a mano como valor final.
