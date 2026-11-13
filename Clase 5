@@ -1,0 +1,357 @@
+# ==========================================================================
+# Introducción a R - Funciones
+# ==========================================================================
+# Autor: Dr. José Juan Torres Martínez
+# Docente de Ciencias Químicas
+# Universidad Autónoma de San Luis Potosí (UASLP)
+# México
+#
+# Material académico para estudiantes
+# Serie "Introducción a R — Lección 05"
+#
+# Descripción: qué es una función y cómo escribir las propias. Primero se
+# define una función sencilla para convertir temperaturas medidas en un
+# baño María de grados Celsius a Fahrenheit; después se escribe una
+# función con varios argumentos para calcular la molaridad de soluciones
+# preparadas en el laboratorio a partir de la masa pesada, la masa molar
+# y el volumen; luego una función con un argumento con valor por omisión
+# para calcular la concentración final de una dilución; después dos
+# funciones que trabajan juntas para resumir mediciones repetidas de
+# absorbancia (media, desviación estándar y coeficiente de variación);
+# y al final se explica el ámbito de las variables y se grafica la
+# dilución. Todos los valores que se calculan en este script se derivan
+# de las mediciones de los archivos.
+#
+# Archivos que usa esta clase:
+#   datos_clase_05.csv      - soluciones preparadas (masa, masa molar,
+#                             volumen)
+#   diluciones_clase_05.csv - diluciones desde una solución madre de
+#                             NaCl 1.00 mol/L hasta 100 mL
+#   replicas_clase_05.csv   - tres réplicas de absorbancia a 595 nm de
+#                             cuatro muestras de proteína
+#
+# Archivos que crea esta clase al correrla:
+#   grafico_clase_05_dilucion.png - concentración final frente al
+#                                   volumen de solución madre tomado
+# ==========================================================================
+
+
+# --------------------------------------------------------------------------
+# 1. Qué es una función
+# --------------------------------------------------------------------------
+# Una función es un bloque de código con un nombre que recibe unos datos
+# de entrada, llamados argumentos, hace un cálculo con ellos y devuelve
+# un resultado. Se define con function():
+#
+#   nombre <- function(argumento1, argumento2) {
+#     # cálculos con los argumentos
+#     return(resultado)
+#   }
+#
+# Definir una función no la ejecuta: solo la deja guardada y lista para
+# usarse. Al llamarla por su nombre con valores entre paréntesis, R
+# ejecuta el cuerpo y devuelve el resultado. La última línea del cuerpo
+# es el valor que devuelve la función; escribir return() lo deja
+# explícito y se recomienda mientras se aprende.
+
+# Ejemplo: convertir una temperatura de grados Celsius a Fahrenheit.
+# La fórmula es: Fahrenheit = Celsius * 9/5 + 32.
+celsius_a_fahrenheit <- function(celsius) {
+  fahrenheit <- celsius * 9 / 5 + 32
+  return(fahrenheit)
+}
+
+# La llamamos con un solo valor: 25 grados Celsius son 77 Fahrenheit.
+print(celsius_a_fahrenheit(25))
+
+# Las temperaturas medidas en el baño María durante la práctica fueron
+# 20, 25, 30, 37 y 40 grados Celsius. Una función en R trabaja igual
+# con un vector completo que con un solo número: aplica el cálculo a
+# cada elemento y devuelve un vector con los resultados.
+temperaturas_celsius <- c(20, 25, 30, 37, 40)
+temperaturas_fahrenheit <- celsius_a_fahrenheit(temperaturas_celsius)
+print(temperaturas_fahrenheit)
+
+# Con una función, un cálculo que se repite muchas veces se escribe una
+# sola vez y se usa cuantas veces haga falta, sin copiar y pegar.
+
+
+# --------------------------------------------------------------------------
+# 2. Función con varios argumentos: la molaridad
+# --------------------------------------------------------------------------
+# Una función puede recibir varios argumentos. Para preparar una
+# solución, la molaridad (mol/L) se calcula a partir de la masa pesada
+# del soluto, su masa molar y el volumen final de la solución:
+#
+#   moles = masa (g) / masa molar (g/mol)
+#   molaridad (mol/L) = moles / volumen (L)
+#
+# La función recibe los tres datos y devuelve la molaridad. Los
+# argumentos se pasan en el mismo orden en que se definieron, o por su
+# nombre, como se ve más abajo.
+molaridad <- function(masa_g, masa_molar, volumen_ml) {
+  moles <- masa_g / masa_molar
+  volumen_l <- volumen_ml / 1000
+  return(moles / volumen_l)
+}
+
+# Comprobamos la función con un caso conocido: 5.84 g de NaCl
+# (masa molar 58.44 g/mol) en 1000 mL dan una solución 0.1 mol/L.
+print(molaridad(5.84, 58.44, 1000))
+
+# Los datos de las soluciones preparadas están en datos_clase_05.csv.
+# Cada fila es una solución: su clave, el soluto, la masa pesada en
+# gramos, la masa molar en g/mol y el volumen final en mililitros.
+# Las columnas son:
+#   solucion         : clave de la solución (S1 a S8)
+#   soluto          : nombre del soluto pesado
+#   masa_g          : masa pesada del soluto, en gramos
+#   masa_molar_g_mol: masa molar del soluto, en g/mol
+#   volumen_ml      : volumen final de la solución, en mililitros
+soluciones <- read.csv("datos_clase_05.csv",
+                       header = TRUE,
+                       sep = ",",
+                       dec = ".",
+                       stringsAsFactors = FALSE)
+str(soluciones)
+print(soluciones)
+
+# Para aplicar la función a cada fila usamos mapply(): toma un elemento
+# de cada vector en cada paso y llama a la función con esos valores.
+# Así, la molaridad de cada solución se calcula con sus propios datos,
+# sin escribir la fórmula ocho veces.
+soluciones$molaridad_mol_l <- mapply(molaridad,
+                                     soluciones$masa_g,
+                                     soluciones$masa_molar_g_mol,
+                                     soluciones$volumen_ml)
+print(soluciones)
+
+# Los argumentos también se pueden pasar por su nombre y en otro orden:
+# el resultado es el mismo porque R los asigna por el nombre.
+print(molaridad(volumen_ml = 500, masa_molar = 180.16, masa_g = 18.02))
+
+
+# --------------------------------------------------------------------------
+# 3. Argumentos con valor por omisión: la dilución
+# --------------------------------------------------------------------------
+# Un argumento puede tener un valor por omisión: si al llamar a la
+# función no se da ese argumento, R usa el valor escrito en la
+# definición. Es útil para el valor que se usa casi siempre.
+#
+# Para preparar una dilución se cumple C1 * V1 = C2 * V2, donde C1 es
+# la concentración de la solución madre, V1 el volumen que se toma de
+# ella, C2 la concentración final y V2 el volumen final. Despejando:
+#
+#   C2 = C1 * V1 / V2
+#
+# En el laboratorio las diluciones se llevan casi siempre a 100 mL, así
+# que el volumen final queda como valor por omisión de la función.
+concentracion_diluida <- function(conc_madre, vol_madre_ml,
+                                  vol_final_ml = 100) {
+  return(conc_madre * vol_madre_ml / vol_final_ml)
+}
+
+# Los datos de las diluciones están en diluciones_clase_05.csv: desde
+# una solución madre de NaCl 1.00 mol/L se tomaron 5, 10, 15, 20, 25 y
+# 30 mL y cada dilución se llevó a 100 mL. Las columnas son:
+#   volumen_madre_ml         : volumen tomado de la madre, en mililitros
+#   concentracion_madre_mol_l: concentración de la madre, en mol/L
+#   volumen_final_ml         : volumen final de la dilución, en mililitros
+diluciones <- read.csv("diluciones_clase_05.csv",
+                       header = TRUE,
+                       sep = ",",
+                       dec = ".",
+                       stringsAsFactors = FALSE)
+print(diluciones)
+
+# Al llamar a la función sin el tercer argumento, R usa 100 mL como
+# volumen final. La concentración final se guarda en una columna nueva.
+diluciones$concentracion_final_mol_l <- mapply(
+  concentracion_diluida,
+  diluciones$concentracion_madre_mol_l,
+  diluciones$volumen_madre_ml
+)
+print(diluciones)
+
+# Comprobamos que el valor por omisión es el mismo que escribir 100:
+# las dos formas dan exactamente las mismas concentraciones.
+con_explicito <- mapply(concentracion_diluida,
+                        diluciones$concentracion_madre_mol_l,
+                        diluciones$volumen_madre_ml,
+                        diluciones$volumen_final_ml)
+print(identical(diluciones$concentracion_final_mol_l, con_explicito))
+
+# Y con los argumentos por nombre se puede cambiar el volumen final:
+# tomar 25 mL de la madre 1.00 mol/L y llevar a 250 mL da 0.1 mol/L.
+print(concentracion_diluida(conc_madre = 1.00, vol_madre_ml = 25,
+                            vol_final_ml = 250))
+
+
+# --------------------------------------------------------------------------
+# 4. Una función que usa otra función: resumir mediciones repetidas
+# --------------------------------------------------------------------------
+# Las funciones se pueden combinar: una función puede llamar a otra
+# dentro de su cuerpo. Eso permite construir cálculos paso a paso y
+# reutilizar cada pieza.
+#
+# El coeficiente de variación (CV) mide qué tan dispersas están las
+# réplicas respecto a su media, en porcentaje: a menor CV, más
+# reproducibles son las mediciones. Se calcula como:
+#
+#   CV (%) = desviación estándar / media * 100
+coeficiente_variacion <- function(x) {
+  return(sd(x) / mean(x) * 100)
+}
+
+# Esta segunda función resume un conjunto de réplicas: devuelve una
+# lista con la media, la desviación estándar, el número de réplicas y
+# el coeficiente de variación, que calcula llamando a la función
+# anterior. Una lista puede guardar varios resultados de distinto tipo
+# bajo un nombre cada uno.
+resumen_medicion <- function(x) {
+  resultado <- list(media = mean(x),
+                    desviacion = sd(x),
+                    n = length(x),
+                    cv_porcentaje = coeficiente_variacion(x))
+  return(resultado)
+}
+
+# Probamos las dos funciones con las réplicas de la muestra M1:
+# absorbancias 0.312, 0.305 y 0.318 a 595 nm.
+print(resumen_medicion(c(0.312, 0.305, 0.318)))
+
+# Las mediciones repetidas de las cuatro muestras están en
+# replicas_clase_05.csv: tres réplicas de absorbancia a 595 nm por
+# muestra, medidas en el ensayo de Bradford. Las columnas son:
+#   replica: clave de la réplica (R1 a R3)
+#   M1 a M4: absorbancia medida a 595 nm (adimensional) de cada muestra
+replicas <- read.csv("replicas_clase_05.csv",
+                     header = TRUE,
+                     sep = ",",
+                     dec = ".",
+                     stringsAsFactors = FALSE)
+print(replicas)
+
+# sapply() aplica una función a cada columna de un data frame y junta
+# los resultados. Aquí aplica resumen_medicion() a las cuatro muestras
+# y devuelve una tabla: una fila por cada valor del resumen y una
+# columna por muestra.
+resumen_muestras <- sapply(replicas[, c("M1", "M2", "M3", "M4")],
+                           resumen_medicion)
+print(resumen_muestras)
+
+# Para leer un valor de la tabla se usan corchetes con el nombre de la
+# fila y el de la columna: la media de la muestra M2 es 0.685.
+print(resumen_muestras["media", "M2"])
+
+# Y el coeficiente de variación de cada muestra se lee de la fila
+# "cv_porcentaje": la muestra M3 tiene el CV más alto, 3.06 %, así que
+# sus réplicas fueron las menos reproducibles de las cuatro.
+
+
+# --------------------------------------------------------------------------
+# 5. El ámbito de las variables
+# --------------------------------------------------------------------------
+# Las variables que se crean dentro de una función solo existen dentro
+# de ella: al terminar la función, desaparecen. A eso se le llama
+# ámbito local. Las variables definidas fuera de la función, en cambio,
+# se pueden leer desde dentro.
+factor_global <- 2
+
+ejemplo_ambito <- function(valor) {
+  dentro <- valor * factor_global
+  return(dentro)
+}
+
+# La función usa factor_global (definida fuera) y devuelve 10.
+print(ejemplo_ambito(5))
+
+# Pero la variable "dentro", creada dentro de la función, no existe
+# fuera de ella: exists() devuelve FALSE.
+print(exists("dentro"))
+
+# Y si dentro de la función se crea una variable con el mismo nombre
+# que una de fuera, la de fuera no cambia: la de dentro es otra
+# variable distinta, que solo vive mientras corre la función.
+x <- 10
+f <- function() {
+  x <- 99
+  return(x)
+}
+print(f())
+print(x)
+
+
+# --------------------------------------------------------------------------
+# 6. Gráfico: la concentración final frente al volumen tomado
+# --------------------------------------------------------------------------
+library(ggplot2)
+
+# Cada punto es una dilución: en el eje horizontal, el volumen tomado
+# de la solución madre 1.00 mol/L; en el vertical, la concentración
+# final calculada con la función de la sección 3.
+grafico <- ggplot(diluciones,
+                  aes(x = volumen_madre_ml,
+                      y = concentracion_final_mol_l)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  labs(title = "Dilución de NaCl 1.00 mol/L a 100 mL",
+       x = "Volumen de solución madre tomado (mL)",
+       y = "Concentración final (mol/L)") +
+  theme_minimal()
+
+print(grafico)
+
+# ggsave() guarda el gráfico como imagen PNG, a 300 dpi.
+ggsave("grafico_clase_05_dilucion.png", plot = grafico,
+       width = 7, height = 5, dpi = 300)
+
+# La recta ajustada a los puntos da la pendiente y la ordenada al
+# origen calculadas con los datos de las diluciones, y el R2 dice qué
+# tan bien la recta describe los puntos.
+ajuste_dilucion <- lm(concentracion_final_mol_l ~ volumen_madre_ml,
+                      data = diluciones)
+print(summary(ajuste_dilucion))
+cat("Pendiente (mol/L por mL):", coef(ajuste_dilucion)[2], "\n")
+cat("Ordenada al origen (mol/L):", coef(ajuste_dilucion)[1], "\n")
+cat("R2 del ajuste:", summary(ajuste_dilucion)$r.squared, "\n")
+
+# Interpretación:
+# El gráfico muestra las seis diluciones preparadas desde la solución
+# madre de NaCl 1.00 mol/L: cada punto es una dilución y la línea es la
+# recta ajustada a esos puntos.
+# El eje horizontal (x) es el volumen de solución madre tomado, en
+# mililitros (mL), de 5 a 30 mL. El eje vertical (y) es la
+# concentración final de la dilución, en moles por litro (mol/L), de
+# 0.05 a 0.30 mol/L.
+# Los puntos suben en línea recta desde el origen: a mayor volumen
+# tomado de la madre, mayor concentración final. La recta ajustada
+# tiene pendiente 0.01 mol/L por mL y ordenada al origen 0 mol/L, con
+# un R2 de 1, lo que significa que la concentración final es
+# exactamente proporcional al volumen tomado, como dice la relación
+# C1 * V1 = C2 * V2: tomar el doble de volumen de la madre da el doble
+# de concentración final cuando el volumen final es siempre 100 mL.
+
+
+# --------------------------------------------------------------------------
+# 7. Qué aprendimos
+# --------------------------------------------------------------------------
+# - Una función se define con function(), recibe argumentos, hace un
+#   cálculo y devuelve un resultado con return(); definirla no la
+#   ejecuta, llamarla por su nombre sí.
+# - Una función trabaja igual con un solo valor que con un vector
+#   completo: aplica el cálculo a cada elemento.
+# - Una función puede recibir varios argumentos; mapply() la aplica
+#   fila por fila tomando un elemento de cada vector.
+# - Los argumentos se pueden pasar por su nombre y en otro orden, y un
+#   argumento puede tener un valor por omisión que R usa cuando no se
+#   da ese argumento al llamar a la función.
+# - Una función puede llamar a otra dentro de su cuerpo y devolver
+#   varios resultados en una lista con un nombre para cada uno.
+# - sapply() aplica una función a cada columna de un data frame y junta
+#   los resultados en una tabla.
+# - Las variables creadas dentro de una función solo existen dentro de
+#   ella; las de fuera se pueden leer desde dentro, pero una variable
+#   local con el mismo nombre no cambia a la de fuera.
+# - Cada resultado de esta clase se derivó de las mediciones de los
+#   archivos CSV: nada se escribió a mano como valor final.

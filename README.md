@@ -37,6 +37,18 @@ punto de partida para estudiantes que nunca han programado.
   `datos_clase_04.csv` y `muestras_clase_04.csv` con las mediciones, el
   archivo `resultados_clase_04.csv` con las concentraciones calculadas y
   un gráfico de la curva de calibración.
+- **Clase 5:** funciones: qué es una función con `function()`, valor de
+  retorno con `return()`, funciones con varios argumentos, argumentos
+  con valor por omisión, funciones que llaman a otras funciones,
+  funciones que devuelven varios resultados en una lista, `mapply()` y
+  `sapply()`, y el ámbito de las variables. Trabaja con soluciones
+  preparadas en el laboratorio (molaridades de 0.0999 a 0.4000 mol/L),
+  diluciones de NaCl 1.00 mol/L a 100 mL (concentraciones finales de
+  0.05 a 0.30 mol/L, pendiente 0.01 mol/L por mL, R2 = 1) y tres
+  réplicas de absorbancia a 595 nm de cuatro muestras de proteína.
+  Incluye los archivos `datos_clase_05.csv`, `diluciones_clase_05.csv`
+  y `replicas_clase_05.csv` con las mediciones y un gráfico de la
+  concentración final frente al volumen de solución madre tomado.
 
 ## Cómo usarlo
 
